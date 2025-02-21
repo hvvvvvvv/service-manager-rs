@@ -148,7 +148,7 @@ impl ServiceManager for SystemdServiceManager {
         let script_path = dir_path.join(format!("{script_name}.service"));
         let service = match ctx.contents {
             Some(contents) => contents,
-            _ => make_service(&self.config.install, &ctx, self.user, ctx.autostart),
+            _ => make_service(&self.config.install, &ctx, self.user),
         };
 
         utils::write_file(
@@ -274,9 +274,7 @@ pub fn systemd_user_dir_path() -> io::Result<PathBuf> {
 fn make_service(
     config: &SystemdInstallConfig,
     ctx: &ServiceInstallCtx,
-    user: bool,
-    autostart: bool,
-    disable_restart_on_failure: bool
+    user: bool
 ) -> String {
     use std::fmt::Write;
 
@@ -342,13 +340,15 @@ fn make_service(
     }
     let _ = writeln!(service, "ExecStart={exec_start}");
 
-    if config.restart != SystemdServiceRestartType::No {
-        let _ = writeln!(service, "Restart={}", config.restart);
-    }
-
-    if let Some(ref x) = config.restart_sec {
-        let _ = writeln!(service, "RestartSec={x}");
-    }
+    if !ctx.disable_restart_on_failure {
+        if config.restart != SystemdServiceRestartType::No {
+            let _ = writeln!(service, "Restart={}", config.restart);
+        }
+    
+        if let Some(ref x) = config.restart_sec {
+            let _ = writeln!(service, "RestartSec={x}");
+        }
+    }  
 
     // For Systemd, a user-mode service definition should *not* specify the username, since it runs
     // as the current user. The service will not start correctly if the definition specifies the
@@ -360,10 +360,10 @@ fn make_service(
         }
     }
 
-    if user && autostart {
+    if user && ctx.autostart {
         let _ = writeln!(service, "[Install]");
         let _ = writeln!(service, "WantedBy=default.target");
-    } else if autostart {
+    } else if ctx.autostart {
         let _ = writeln!(service, "[Install]");
         let _ = writeln!(service, "WantedBy=multi-user.target");
     }

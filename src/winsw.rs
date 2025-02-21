@@ -207,11 +207,16 @@ impl WinSwServiceManager {
         }
 
         // Optional install elements
-        let (action, delay) = match &config.install.failure_action {
-            WinSwOnFailureAction::Restart(delay) => ("restart", delay.as_deref()),
-            WinSwOnFailureAction::Reboot => ("reboot", None),
-            WinSwOnFailureAction::None => ("none", None),
+        let (action, delay) = if ctx.disable_restart_on_failure {
+            ("none", None)
+        } else {
+            match &config.install.failure_action {
+                WinSwOnFailureAction::Restart(delay) => ("restart", delay.as_deref()),
+                WinSwOnFailureAction::Reboot => ("reboot", None),
+                WinSwOnFailureAction::None => ("none", None),
+            }
         };
+
         let attributes = delay.map_or_else(
             || vec![("action", action)],
             |d| vec![("action", action), ("delay", d)],
@@ -460,6 +465,11 @@ impl ServiceManager for WinSwServiceManager {
             if stderr.contains("System.IO.FileNotFoundException: Unable to locate WinSW.[xml|yml] file within executable directory") {
                 return Ok(ServiceStatus::NotInstalled);
             }
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            // Unsuccessful output status seems to be incorrect sometimes
+            if stdout.contains("Active") {
+                return Ok(ServiceStatus::Running);
+            }
             return Err(io::Error::new(
                 io::ErrorKind::Other,
                 format!("Failed to get service status: {}", stderr),
@@ -626,7 +636,8 @@ mod tests {
             username: None,
             working_directory: None,
             environment: None,
-            autostart: true
+            autostart: true,
+            disable_restart_on_failure: false,
         };
 
         WinSwServiceManager::write_service_configuration(
@@ -673,7 +684,8 @@ mod tests {
             username: None,
             working_directory: None,
             environment: None,
-            autostart: false
+            autostart: false,
+            disable_restart_on_failure: false,
         };
 
         WinSwServiceManager::write_service_configuration(
@@ -720,7 +732,8 @@ mod tests {
             username: None,
             working_directory: None,
             environment: None,
-            autostart: false
+            autostart: false,
+            disable_restart_on_failure: false,
         };
 
         let mut config = WinSwConfig::default();
@@ -772,7 +785,8 @@ mod tests {
                 ("ENV1".to_string(), "val1".to_string()),
                 ("ENV2".to_string(), "val2".to_string()),
             ]),
-            autostart: true
+            autostart: true,
+            disable_restart_on_failure: false,
         };
 
         let config = WinSwConfig {
@@ -903,7 +917,8 @@ mod tests {
             username: None,
             working_directory: None,
             environment: None,
-            autostart: true
+            autostart: true,
+            disable_restart_on_failure: false,
         };
 
         WinSwServiceManager::write_service_configuration(
@@ -946,7 +961,8 @@ mod tests {
             username: None,
             working_directory: None,
             environment: None,
-            autostart: true
+            autostart: true,
+            disable_restart_on_failure: false,
         };
 
         let result = WinSwServiceManager::write_service_configuration(

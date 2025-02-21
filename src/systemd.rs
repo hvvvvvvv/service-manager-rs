@@ -276,6 +276,7 @@ fn make_service(
     ctx: &ServiceInstallCtx,
     user: bool,
     autostart: bool,
+    disable_restart_on_failure: bool
 ) -> String {
     use std::fmt::Write;
 

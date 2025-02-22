@@ -7,17 +7,15 @@ use std::{
     time::Duration,
 };
 
-/// Time to wait from starting a service to communicating with it
-const WAIT_PERIOD: Duration = Duration::from_secs(1);
 const SERVICE_LABEL: &str = "com.example.echo";
 
 pub fn is_running_in_ci() -> bool {
     std::env::var("CI").as_deref() == Ok("true")
 }
 
-fn wait() {
-    eprintln!("Waiting {}s before continuing", WAIT_PERIOD.as_secs_f32());
-    thread::sleep(WAIT_PERIOD);
+fn wait(secs: f32) {
+    eprintln!("Waiting {}s before continuing", secs);
+    thread::sleep(Duration::from_secs_f32(secs));
 }
 
 #[allow(dead_code)]
@@ -105,7 +103,7 @@ pub fn run_test(manager: &TypedServiceManager, username: Option<String>) -> Opti
             })
             .unwrap();
 
-        wait();
+        wait(1f32);
     }
 
     eprintln!("Checking status of service");
@@ -138,7 +136,7 @@ pub fn run_test(manager: &TypedServiceManager, username: Option<String>) -> Opti
         .unwrap();
 
     // Wait for service to be installed
-    wait();
+    wait(1f32);
 
     eprintln!("Checking status of service");
     assert!(
@@ -165,7 +163,7 @@ pub fn run_test(manager: &TypedServiceManager, username: Option<String>) -> Opti
         .unwrap();
 
     // Wait for the service to start
-    wait();
+    wait(1f32);
 
     eprintln!("Checking status of service");
     assert!(
@@ -189,7 +187,7 @@ pub fn run_test(manager: &TypedServiceManager, username: Option<String>) -> Opti
         .arg("hello world")
         .assert()
         .stdout("hello world\n");
-    wait();
+    wait(1f32);
 
     // Stop the service
     eprintln!("Stopping service");
@@ -212,8 +210,7 @@ pub fn run_test(manager: &TypedServiceManager, username: Option<String>) -> Opti
     }
 
     // Wait for the service to stop
-    wait();
-    wait();
+    wait(10f32);
     eprintln!("Checking status of service");
     let status = manager
         .status(ServiceStatusCtx {
@@ -236,7 +233,7 @@ pub fn run_test(manager: &TypedServiceManager, username: Option<String>) -> Opti
             label: service_label.clone(),
         })
         .unwrap();
-    wait();
+    wait(1f32);
 
     eprintln!("Checking status of service");
     assert!(

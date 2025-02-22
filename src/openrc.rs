@@ -249,6 +249,7 @@ fn make_script(ctx: &ServiceInstallCtx, config: &OpenRcInstallConfig) -> String 
     let _ = writeln!(script, "command_args=\"{args}\"");
     let _ = writeln!(script, "pidfile=\"/run/${{RC_SVCNAME}}.pid\"");
     let _ = writeln!(script, "command_background=\"yes\"");
+    let _ = writeln!(script, "retry=\"SIGTERM/5 SIGKILL/5\"");
     if let Some(workdir) = workdir {
         let workdir = workdir.display().to_string();
         let _ = writeln!(script, "directory=\"{workdir}\"");

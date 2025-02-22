@@ -242,7 +242,7 @@ fn make_script(ctx: &ServiceInstallCtx, config: &OpenRcInstallConfig) -> String 
 
     let mut script = String::new();
 
-    let _ = writeln!(script, "!/sbin/openrc-run");
+    let _ = writeln!(script, "#!/sbin/openrc-run");
     let _ = writeln!(script);
     let _ = writeln!(script, "description=\"{destription}\"");
     let _ = writeln!(script, "command=\"{program}\"");

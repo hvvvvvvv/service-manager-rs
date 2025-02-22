@@ -350,12 +350,11 @@ mod scm_handler {
 
 #[cfg(not(target_os = "windows"))]
 mod scm_handler {
-    use super::ScmInstallConfig;
     use super::{
-        ServiceInstallCtx, ServiceStartCtx, ServiceStatusCtx, ServiceStopCtx, ServiceUninstallCtx,
+        ScmInstallConfig, ServiceInstallCtx, ServiceStartCtx, ServiceStatusCtx, ServiceStopCtx,
+        ServiceUninstallCtx,
     };
     use std::io;
-    use super::ScmInstallConfig;
 
     const ERROR_MSG: &str = "Service control manager is not supported on this platform";
 

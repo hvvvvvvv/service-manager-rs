@@ -213,15 +213,17 @@ pub fn run_test(manager: &TypedServiceManager, username: Option<String>) -> Opti
 
     // Wait for the service to stop
     wait();
-
+    wait();
     eprintln!("Checking status of service");
+    let status = manager
+        .status(ServiceStatusCtx {
+            label: service_label.clone(),
+        })
+        .unwrap();
+    eprint!("Service status: {:?}", status);
     assert!(
         matches!(
-            manager
-                .status(ServiceStatusCtx {
-                    label: service_label.clone(),
-                })
-                .unwrap(),
+            status,
             ServiceStatus::Stopped(_)
         ),
         "service should be stopped"

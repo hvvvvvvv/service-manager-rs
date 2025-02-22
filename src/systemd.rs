@@ -157,7 +157,7 @@ impl ServiceManager for SystemdServiceManager {
             SERVICE_FILE_PERMISSIONS,
         )?;
 
-        wrap_output(systemctl_daemon_reload()?)?;
+        wrap_output(systemctl_daemon_reload(self.user)?)?;
 
         if ctx.autostart {
             wrap_output(systemctl(
@@ -185,7 +185,7 @@ impl ServiceManager for SystemdServiceManager {
             self.user,
         )?)?;
         std::fs::remove_file(script_path)?;
-        wrap_output(systemctl_daemon_reload()?)?;
+        wrap_output(systemctl_daemon_reload(self.user)?)?;
         Ok(())
     }
 
@@ -250,12 +250,17 @@ fn systemctl(cmd: &str, label: &str, user: bool) -> io::Result<Output> {
     command.arg(cmd).arg(label).output()
 }
 
-fn systemctl_daemon_reload() -> io::Result<Output> {
+fn systemctl_daemon_reload(user: bool) -> io::Result<Output> {
     let mut command = Command::new(SYSTEMCTL);
     command
+
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
+    if user {
+        command.arg("--user");
+    }
+
     command.arg("daemon-reload").output()
 }
 

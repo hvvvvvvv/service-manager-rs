@@ -829,7 +829,7 @@ mod tests {
 
         service_config_file.assert(predicates::path::is_file());
         assert_eq!("org.example.my_service", get_element_value(&xml, "id"));
-        assert_eq!("org.example.my_service", get_element_value(&xml, "name"));
+        assert_eq!("org example my_service", get_element_value(&xml, "name"));
         assert_eq!(
             "C:\\Program Files\\org.example\\my_service.exe",
             get_element_value(&xml, "executable")
